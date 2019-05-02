@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using Autofac;
+using Autofac.Integration.WebApi;
+using Providers.Dao.Implementation;
+using Providers.Dao.Interface;
+using System.Reflection;
 using System.Web.Http;
 using System.Web.Mvc;
-using System.Web.Optimization;
 using System.Web.Routing;
 
 namespace ContactManager
@@ -13,11 +13,28 @@ namespace ContactManager
     {
         protected void Application_Start()
         {
-            AreaRegistration.RegisterAllAreas();
             GlobalConfiguration.Configure(WebApiConfig.Register);
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
-            BundleConfig.RegisterBundles(BundleTable.Bundles);
+
+            // Autofac Configuration
+            var builder = new ContainerBuilder();
+
+            // Get your HttpConfiguration.
+            var config = GlobalConfiguration.Configuration;
+
+            // Register your Web API controllers.
+            builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
+
+            // Register Services
+            builder.RegisterType<ContactsDao>().As<IContactsDao>();
+            builder.RegisterType<SessionFactory>().As<ISessionFactory>();
+
+            // Set the dependency resolver to be Autofac.
+            var container = builder.Build();
+            config.DependencyResolver = new AutofacWebApiDependencyResolver(container);
+
+
         }
     }
 }
