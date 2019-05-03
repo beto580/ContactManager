@@ -16,7 +16,7 @@ namespace ContactManager.Tests.Controllers
         private Mock<ISessionFactory> mockSessionFactory;
 
         [SetUp]
-        void Setup()
+        public void Setup()
         {
             mockSessionFactory = new Mock<ISessionFactory>();
             mockDao = new Mock<IContactsDao>();

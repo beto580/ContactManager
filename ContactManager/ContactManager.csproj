@@ -46,6 +46,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\ContactManager.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Autofac, Version=4.9.2.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
@@ -272,6 +273,24 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
   </Target>
+  <PropertyGroup>
+  <CopyAllFilesToSingleFolderForPackageDependsOn>
+    CustomCollectFiles;
+    $(CopyAllFilesToSingleFolderForPackageDependsOn);
+  </CopyAllFilesToSingleFolderForPackageDependsOn>
+  <CopyAllFilesToSingleFolderForMsdeployDependsOn>
+    CustomCollectFiles;
+    $(CopyAllFilesToSingleFolderForMsdeployDependsOn);
+  </CopyAllFilesToSingleFolderForMsdeployDependsOn>
+</PropertyGroup>
+<Target Name="CustomCollectFiles">
+  <ItemGroup>
+    <_CustomFiles Include="..\ContactManager.Domain\bin\ContactManager.Domain.xml" />
+    <FilesForPackagingFromProject Include="%(_CustomFiles.Identity)">
+      <DestinationRelativePath>bin\%(Filename)%(Extension)</DestinationRelativePath>
+    </FilesForPackagingFromProject>
+  </ItemGroup>
+</Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
