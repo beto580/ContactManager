@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Web.Http;
 using ContactManager.Domain.WebApi;
 using ContactManager.SwaggerAssets.SampleRequest;
@@ -56,13 +57,27 @@ namespace ContactManager.Controllers
         [SwaggerResponse(HttpStatusCode.OK, "Returns a Contact from the specified id", typeof(Contact))]
         public IHttpActionResult GetContact(int id)
         {
-            Contact contact = contactsDao.GetById(id);
-            if (contact == null)
+            try
             {
-                return NotFound();
-            }
+                return CatchException(() =>
+                {
+                    Contact contact = contactsDao.GetById(id);
+                    if (contact == null)
+                    {
+                        throw new HttpResponseException(HttpStatusCode.NotFound);
+                    }
 
-            return Ok(contact);
+                    return Ok(contact);
+                });
+            }
+            catch (HttpResponseException ex)
+            {
+                return ResponseMessage(ex.Response);
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
         }
 
         // GET: api/Contacts/albertorojas580@hotmail.com
@@ -75,14 +90,28 @@ namespace ContactManager.Controllers
         SwaggerResponse(HttpStatusCode.OK, "Returns a collection of Contacts by email", typeof(IQueryable<Contact>))]
         public IHttpActionResult GetByEmail(string email)
         {
-            var contacts = contactsDao.GetByEmail(email.ToLower());
-
-            if (contacts.Count() == 0)
+            try
             {
-                return NotFound();
-            }
+                return CatchException(() =>
+                {
+                    var contacts = contactsDao.GetByEmail(email.ToLower());
 
-            return Ok(contacts);
+                    if (contacts.Count() == 0)
+                    {
+                        throw new HttpResponseException(HttpStatusCode.NotFound);
+                    }
+
+                    return Ok(contacts);
+                });
+            }
+            catch (HttpResponseException ex)
+            {
+                return ResponseMessage(ex.Response);
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
         }
 
         // GET: api/Contacts/+541132984698
@@ -95,14 +124,28 @@ namespace ContactManager.Controllers
         SwaggerResponse(HttpStatusCode.OK, "Returns a collection of Contacts by phone number", typeof(IQueryable<Contact>))]
         public IHttpActionResult GetByPhone(string phone)
         {
-            var contacts = contactsDao.GetByPhone(phone.ToLower());
-
-            if (contacts.Count() == 0)
+            try
             {
-                return NotFound();
-            }
+                return CatchException(() =>
+                {
+                    var contacts = contactsDao.GetByPhone(phone.ToLower());
 
-            return Ok(contacts);
+                    if (contacts.Count() == 0)
+                    {
+                        throw new HttpResponseException(HttpStatusCode.NotFound);
+                    }
+
+                    return Ok(contacts);
+                });
+            }
+            catch (HttpResponseException ex)
+            {
+                return ResponseMessage(ex.Response);
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
         }
 
         // GET: api/Contacts/cordoba
@@ -115,14 +158,28 @@ namespace ContactManager.Controllers
         SwaggerResponse(HttpStatusCode.OK, "Returns a collection of Contacts by state", typeof(IQueryable<Contact>))]
         public IHttpActionResult GetByState(string state)
         {
-            var contacts = contactsDao.GetByState(state.ToLower());
-
-            if (contacts.Count() == 0)
+            try
             {
-                return NotFound();
-            }
+                return CatchException(() =>
+                {
+                    var contacts = contactsDao.GetByState(state.ToLower());
 
-            return Ok(contacts);
+                    if (contacts.Count() == 0)
+                    {
+                        throw new HttpResponseException(HttpStatusCode.NotFound);
+                    }
+
+                    return Ok(contacts);
+                });
+            }
+            catch (HttpResponseException ex)
+            {
+                return ResponseMessage(ex.Response);
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
         }
 
         // GET: api/Contacts/salta
@@ -135,14 +192,28 @@ namespace ContactManager.Controllers
         SwaggerResponse(HttpStatusCode.OK, "Returns a collection of Contacts by city", typeof(IQueryable<Contact>))]
         public IHttpActionResult GetByCity(string city)
         {
-            var contacts = contactsDao.GetByCity(city.ToLower());
-
-            if (contacts.Count() == 0)
+            try
             {
-                return NotFound();
-            }
+                return CatchException(() =>
+                {
+                    var contacts = contactsDao.GetByCity(city.ToLower());
 
-            return Ok(contacts);
+                    if (contacts.Count() == 0)
+                    {
+                        throw new HttpResponseException(HttpStatusCode.NotFound);
+                    }
+
+                    return Ok(contacts);
+                });
+            }
+            catch (HttpResponseException ex)
+            {
+                return ResponseMessage(ex.Response);
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
         }
 
         // PUT: api/Contacts/5
@@ -162,17 +233,25 @@ namespace ContactManager.Controllers
                 return BadRequest(ModelState);
             }
 
-            Contact contact = contactsDao.GetById(id);
-            if (contact == null)
-            {
-                return NotFound();
-            }
-
-            contactsDao.UpdateContact(contact, newContact);
-
             try
             {
-                contactsDao.Commit();
+                return CatchException(() =>
+                {
+                    Contact contact = contactsDao.GetById(id);
+                    if (contact == null)
+                    {
+                        throw new HttpResponseException(HttpStatusCode.NotFound);
+                    }
+
+                    contactsDao.UpdateContact(contact, newContact);
+                    contactsDao.Commit();
+
+                    return StatusCode(HttpStatusCode.NoContent);
+                });
+            }
+            catch (HttpResponseException ex)
+            {
+                return ResponseMessage(ex.Response);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -185,8 +264,10 @@ namespace ContactManager.Controllers
                     throw;
                 }
             }
-
-            return StatusCode(HttpStatusCode.NoContent);
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
         }
 
         // POST: api/Contacts
@@ -204,10 +285,20 @@ namespace ContactManager.Controllers
                 return BadRequest(ModelState);
             }
 
-            contactsDao.CreateContact(contact);
-            contactsDao.Commit();
+            try
+            {
+                return CatchException(() =>
+                {
+                    contactsDao.CreateContact(contact);
+                    contactsDao.Commit();
 
-            return CreatedAtRoute("DefaultApi", new { id = contact.ID }, contact);
+                    return CreatedAtRoute("DefaultApi", new { id = contact.ID }, contact);
+                });
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
         }
 
         // DELETE: api/Contacts/5
@@ -219,16 +310,30 @@ namespace ContactManager.Controllers
         [SwaggerResponse(HttpStatusCode.OK, "Deletes an existing Contact", typeof(Contact))]
         public IHttpActionResult DeleteContact(int id)
         {
-            Contact contact = contactsDao.GetById(id);
-            if (contact == null)
+            try
             {
-                return NotFound();
+                return CatchException(() =>
+                {
+                    Contact contact = contactsDao.GetById(id);
+                    if (contact == null)
+                    {
+                        throw new HttpResponseException(HttpStatusCode.NotFound);
+                    }
+
+                    contactsDao.DeleteContact(contact);
+                    contactsDao.Commit();
+
+                    return Ok(contact);
+                });
             }
-
-            contactsDao.DeleteContact(contact);
-            contactsDao.Commit();
-
-            return Ok(contact);
+            catch (HttpResponseException ex)
+            {
+                return ResponseMessage(ex.Response);
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
         }
 
         protected override void Dispose(bool disposing)
